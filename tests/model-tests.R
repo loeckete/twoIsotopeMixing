@@ -1,0 +1,18 @@
+source('app/model.R')
+f<-food_catalog()
+run<-function(x) mix_diet(f[match(x$s,f$id),],f[match(x$p,f$id),],x$sw,x$pw,x$routing,x$dc,x$dn,x$uC,x$uN)
+a<-run(preset_config('A')); b<-run(preset_config('B'))
+# Independent hand calculation: staple C=-26.6; protein C=-22.4; N=3.4.
+stopifnot(abs(a$C-(-21.66))<1e-10,abs(a$N-8.4)<1e-10)
+stopifnot(abs(b$C-a$C-4.38)<1e-10,identical(a$N,b$N))
+x<-preset_config();x$routing<-0;stopifnot(abs(run(x)$C-(-24.6))<1e-10)
+x$routing<-1;stopifnot(abs(run(x)$C-(-20.4))<1e-10)
+x<-preset_config();x$sw<-x$sw*7;x$pw<-x$pw*3
+stopifnot(abs(run(x)$C-a$C)<1e-10,abs(run(x)$N-a$N)<1e-10)
+x<-preset_config();x$dn<-3;stopifnot(abs(run(x)$N-a$N+2)<1e-10)
+bad<-function(expr) stopifnot(inherits(tryCatch({force(expr);NULL},error=function(e)e),'error'))
+bad(normalize_parts(c(0,0,0)));bad(normalize_parts(c(-1,3)));bad(normalize_parts(c(NA,1)))
+x<-preset_config();x$routing<-1.1;bad(run(x))
+x<-preset_config();x$dc<-NA;bad(run(x))
+x<-preset_config();x$pw<-c(0,0,0);bad(run(x))
+cat('Model checks passed.\n')

@@ -1,0 +1,21 @@
+library(shiny)
+setwd('app')
+source('app.R')
+testServer(server,{
+ session$setInputs(s1='rice',s2='wheat',s3='corn',sw1=60,sw2=40,sw3=0,
+   p1='beans',p2='chicken',p3='dairy',pw1=40,pw2=40,pw3=20,
+   routing=70,dc=2,dn=5,uC=1,uN=1,prediction='Carbon rises',run=0)
+ session$setInputs(run=1)
+ stopifnot(abs(current()$C+21.66)<1e-10)
+ stopifnot(nzchar(output$calculation),nzchar(output$status))
+ invisible(output$metrics);invisible(output$weights);invisible(output$catalog)
+ invisible(output$isoplot);invisible(output$sensitivity)
+ session$setInputs(keep=1);stopifnot(identical(old(),current()))
+ session$setInputs(sw1=0,sw2=0,sw3=100)
+ stopifnot(grepl('Controls changed',output$status),abs(current()$C+21.66)<1e-10)
+ session$setInputs(run=2);stopifnot(abs(current()$C+17.28)<1e-10)
+ session$setInputs(pw1=0,pw2=0,pw3=0,run=3)
+ stopifnot(!is.null(error()),abs(current()$C+17.28)<1e-10)
+ session$setInputs(clear=1);stopifnot(is.null(old()))
+})
+cat('Shiny interaction checks passed.\n')
